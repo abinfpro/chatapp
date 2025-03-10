@@ -152,7 +152,7 @@
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
-      const socket = io(`${process.env.API_URL}`);
+      const socket = io(`https://chatapp-97os.onrender.com`);
       let recieverId;
       const userId = "<%= id %>";
       const userName = "<%=username%>";
@@ -169,7 +169,7 @@
       socket.emit("message", "hello");
       socket.on("reply", (reply) => {});
       const createChat = async (recieverId) => {
-        const data = await fetch(`${process.env.API_URL}/chat/createChat`, {
+        const data = await fetch(`https://chatapp-97os.onrender.com/chat/createChat`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -203,7 +203,7 @@
           });
           document.getElementById("messageInputField").value = "";
           const data = await fetch(
-            `${process.env.API_URL}/message/createMessage`,
+            `https://chatapp-97os.onrender.com/message/createMessage`,
             {
               method: "POST",
               headers: {
