@@ -1,0 +1,76 @@
+/* Apply WhatsApp Font */
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #d2f8d2; /* Light green WhatsApp background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Login Box */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+}
+
+.login-box {
+    background: white;
+    padding: 30px;
+    width: 350px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+/* WhatsApp Logo */
+.logo {
+    width: 60px;
+    margin-bottom: 10px;
+}
+
+/* Form Inputs */
+form input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Login Button */
+form button {
+    width: 100%;
+    padding: 12px;
+    background-color: #25D366; /* WhatsApp green */
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+form button:hover {
+    background-color: #1EBE57;
+}
+
+/* Register Link */
+p {
+    margin-top: 15px;
+}
+
+p a {
+    color: #25D366;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+p a:hover {
+    text-decoration: underline;
+}

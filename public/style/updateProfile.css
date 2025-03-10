@@ -1,0 +1,102 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #d2f8d2;
+    margin: 0;
+    overflow: hidden; /* Prevent scrollbars due to animation */
+    position: relative;
+}
+
+/* Background Emoji Animation */
+.emoji-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.emoji {
+    position: absolute;
+    bottom: -50px;
+    opacity: 0.7;
+    animation: floatEmojis linear infinite;
+}
+
+@keyframes floatEmojis {
+    0% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-100vh);
+        opacity: 0;
+    }
+}
+
+/* Profile Container */
+.profile-container {
+    text-align: center;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    width: 350px;
+    height: 475px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Profile Image */
+.profile-image {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 5px solid #25D366;
+    display: block;
+}
+
+/* Input Fields */
+.profile-name, .profile-bio {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.profile-bio {
+    resize: none;
+    height: 60px;
+}
+
+/* Submit Button */
+.submit-button {
+    background-color: #25D366;
+    color: white;
+    border: none;
+    padding: 10px;
+    margin-top: 50px;
+    width: 100%;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #1EBE5D;
+}

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChatApp</title>
+    <link rel="stylesheet" href="/style/homePage.css" />
+  </head>
+  <body>
+    <div class="container">
+      <nav
+        style="
+          display: flex;
+          justify-content: space-between;
+          background-color: #25d366;
+          width: 100%;
+          height: 60px;
+        "
+      >
+        <h1 style="padding-left: 10px">ChatAPP</h1>
+        <div style="display: flex; align-items: center; gap: 30px">
+          <div style="display: flex; align-items: center;gap: 5px;">
+          <a href="/viewProfile/<%=id%>">
+            <img
+              style="width: 50px; height: 50px; border-radius: 50%"
+              id="profile img"
+              src="<%= profilePicture %>"
+              alt=""
+          /></a>
+          <h3><%=username%></h3>
+           </div>
+          <a style="text-decoration: none" href="/logout">
+            <h3 style="padding-right: 10px; color: white">Logout</h3></a
+          >
+        </div>
+      </nav>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="profile">
+          <h3>CHATS</h3>
+        </div>
+
+        <div class="contacts">
+          <% if (users && users.length > 0) { %> <% users.forEach((v) => { %>
+          <div onclick="createChat(recieverId)" id="contact">
+            <div
+              style="
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                border-color: #25d366;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+              "
+            >
+              <img
+                onclick="viewProfile('<%= v.username %>', '<%= v.bio %>','<%= v.profilePicture %>')"
+                src="<%= v.profilePicture %>"
+                alt=""
+              />
+            </div>
+            <h4><%= v.username %></h4>
+            <div
+              onclick="openMessageBox('<%= v.username %>','<%= v._id %>')"
+              style="width: 100%; height: 60px"
+              class="contact-info"
+            >
+              ...
+            </div>
+          </div>
+          <% }); %> <% } %>
+
+          <div
+            id="profileModal"
+            class="modal"
+            style="
+              width: 250px;
+              height: 300px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              display: none;
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+              background: white;
+              padding: 20px;
+              border-radius: 10px;
+              box-shadow: 0 4px 10px rgb(0, 0, 0, 0.3);
+            "
+          >
+            <div style="display: flex; flex-direction: column; gap: 15px">
+              <div style="display: flex; justify-content: center">
+                <img
+                  id="profileImage"
+                  src=""
+                  alt="Profile Picture"
+                  style="width: 100px; height: 100px; border-radius: 50%"
+                />
+              </div>
+              <h3
+                style="color: black; text-align: center"
+                id="profileName"
+              ></h3>
+              <p style="color: black; text-align: center" id="profileBio"></p>
+              <div style="display: flex; justify-content: center">
+                <button
+                  class="btn"
+                  onclick="document.getElementById('profileModal').style.display='none'"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="container" id="open" style="display: none">
+      <!-- Chat Area -->
+      <div class="chat-area">
+        <div class="chat-header" style="display: flex; justify-content:stretch; align-items: center;padding-left: 10px;">
+         <a style="color: #fff;text-decoration: none; " href="/"><h3>Back</h3></a>
+          <h3 style="padding-left: 15px" id="selectedUser"></h3>
+        </div>
+        <div
+          style="
+            display: flex;
+            max-height: 450px;
+            overflow-y: scroll;
+            flex-direction: column;
+            gap: 330px;
+          "
+        >
+          <div id="chat-container" class="chat-box"></div>
+          <div class="chat-input">
+            <input
+              id="messageInputField"
+              type="text"
+              placeholder="Type a message"
+            />
+            <button onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+      const socket = io(`${process.env.API_URL}`);
+      let recieverId;
+      const userId = "<%= id %>";
+      const userName = "<%=username%>";
+      socket.emit("joinRoom", userId);
+
+      socket.on("message", (msg, pos) => {
+        let element = document.getElementById("chat-container");
+        if (pos == "left") {
+          element.innerHTML += `<div class="message received">${msg}</div>`;
+        } else {
+          element.innerHTML += `<div class="message sent">${msg}</div>`;
+        }
+      });
+      socket.emit("message", "hello");
+      socket.on("reply", (reply) => {});
+      const createChat = async (recieverId) => {
+        const data = await fetch(`${process.env.API_URL}/chat/createChat`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: userId,
+            recieverId: recieverId,
+          }),
+        });
+
+        const messages = await data.json();
+        let element = document.getElementById("chat-container");        
+        element.innerHTML = "";
+        messages.forEach((msg) => {
+          if (msg.sender == userId) {
+            element.innerHTML += `<div class="message sent">${msg.content}</div>`;
+          } else {
+            element.innerHTML += `<div class="message received">${msg.content}</div>`;
+          }
+        });
+      };
+
+      const sendMessage = async () => {
+        const message = document.getElementById("messageInputField").value;
+        if (message.length) {
+          socket.emit("chatMessage", {
+            senderId: userId,
+            recieverId,
+            message,
+            userName,
+          });
+          document.getElementById("messageInputField").value = "";
+          const data = await fetch(
+            `${process.env.API_URL}/message/createMessage`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                message: message,
+                userId: userId,
+                recieverId: recieverId,
+              }),
+            }
+          );
+        }
+      };
+
+      function viewProfile(name, bio, image) {
+        // Display user details in a modal or section
+        document.getElementById("profileImage").src = image;
+        document.getElementById("profileName").innerText = name;
+        document.getElementById("profileBio").innerText = bio;
+
+        // Show modal (if using one)
+        document.getElementById("profileModal").style.display = "block";
+      }
+
+      const openMessageBox = (selectedUserName, reciever) => {
+        recieverId = reciever;
+        document.getElementById("open").style.display = "block";
+        document.getElementById("selectedUser").innerHTML = selectedUserName;
+      };
+    </script>
+
+
+  </body>
+</html>

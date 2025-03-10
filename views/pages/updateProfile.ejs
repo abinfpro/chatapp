@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>updateProfile</title>
+    <link rel="stylesheet" href="/style/updateProfile.css">
+</head>
+<body>
+    <div class="profile-container">
+        <h1 style="color: #25d366">Update Profile</h1>
+        <form
+          style="
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            gap: 25px;
+            padding-right: 15px;
+          "
+          action="/updateProfile"
+          method="post"
+          enctype="multipart/form-data"
+         >
+          <!-- Profile Image Upload -->
+          <label for="image" style="display: flex; justify-content: center">
+            <div
+              style="display: flex; justify-content: center; position: relative"
+            >
+              <img
+                src="<%= user.profilePicture %>"
+                alt=""
+                class="profile-image"
+                id="imagePreview"
+                style="position: absolute; z-index: 2"
+              />
+              <input
+              onchange="handleImageChange(event)"
+                type="file"
+                name="image"
+                id="image"
+                accept="image/*"
+                value="<%= user.profilePicture %>"
+                style="
+                  position: absolute;
+                  z-index: 3;
+                  width: 125px;
+                  height: 125px;
+                  cursor: pointer;
+                  opacity: 0%;
+                "
+              />
+            </div>
+          </label>
+  
+          <div style="margin-top: 150px">
+            <input
+              name="username"
+              type="text"
+              id="profileName"
+              class="profile-name"
+              placeholder="Enter your Username"
+              value="<%=user.username%>"/>
+            <textarea
+              name="bio"
+              id="profileBio"
+              class="profile-bio"
+              placeholder="Enter your bio"
+              required 
+              
+            ><%=user.bio%></textarea>
+            <button type="submit" class="submit-button">Submit</button>
+          </div>
+        </form>
+      </div>
+
+      <script>
+          const handleImageChange = (e) => {
+        try {
+          const image = e.target.files[0];
+          const imageUrl = URL.createObjectURL(image);
+          const imageElement = document.getElementById("imagePreview");
+          imageElement.src = imageUrl;
+        } catch (error) {
+          console.error("Error loading image", error);
+        }
+      };
+      </script>
+</body>
+</html>
