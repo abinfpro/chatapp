@@ -5,9 +5,8 @@ const bcrypt = require("bcrypt");
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
-const fs = require("fs")
-const path = require("path")
-
+const fs = require("fs");
+const path = require("path");
 
 // render register page
 const renderRegister = (req, res) => {
@@ -20,17 +19,14 @@ const renderLogin = (req, res) => {
 };
 
 const renderHome = async (req, res) => {
-  try {    
+  try {
     const { id, username, profilePicture } = req.user;
-    console.log(id,"dfghjkl");
-    
     const users = await User.find({
       _id: { $ne: new mongoose.Types.ObjectId(id) },
-    });    
-     res.render("pages/homePage", { users, username, id ,profilePicture});
+    });
+    res.render("pages/homePage", { users, username, id, profilePicture });
   } catch (error) {
-        console.log(error.message);
-            
+    console.log(error.message);
   }
 };
 
@@ -41,7 +37,6 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS,
   },
 });
-
 
 //  Function to Send OTP via Email
 const sendOtp = async (email, otp) => {
@@ -83,9 +78,9 @@ const registerUser = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      otp, 
+      otp,
       otpExpires,
-      isVerified: false, 
+      isVerified: false,
     });
 
     const token = jwt.sign(
@@ -95,53 +90,58 @@ const registerUser = async (req, res) => {
     );
 
     const option = {
-      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), 
+      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
       httpOnly: true,
     };
 
     await sendOtp(email, otp);
 
     res.cookie("token", token, option);
-   res.render("pages/otpPage",{user: user._id})
-
+    res.render("pages/otpPage", { user: user._id });
   } catch (error) {
     console.error("Error registering user:", error);
-    res.status(500).json({ message: "Internal Server Error" }); 
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-const verifyOtp =async (req,res)=>{
+const verifyOtp = async (req, res) => {
   try {
-    const id = req.params.id
-    const {otp} = req.body;
-   const user = await User.findById(id)
-   if(otp === user.otp){
-      res.render("pages/profileSetup",{id:user._id,username: user.username})
-   }  else{
-      await User.findByIdAndDelete(id)
-       res.status(400).render("pages/error",{errorMessage:"Error OTP"})
-   }
-    
-  } catch (error) {
-  }
-}
-
-
+    const id = req.params.id;
+    const { otp } = req.body;
+    const user = await User.findById(id);
+    if (otp.toString() === user.otp.toString()) {
+      // Remove OTP field after successful verification
+      const updatedUser = await User.findByIdAndUpdate(id, { $unset: { otp: 1, otpexpires: 1 } }, { new: true });
+     
+      res.render("pages/profileSetup", {
+        id: user._id,
+        username: user.username,
+      });
+    } else {
+      await User.findByIdAndDelete(id);
+      res.status(400).render("pages/error", { errorMessage: "Error OTP" });
+    }
+  } catch (error) {}
+};
 
 // PROFILE SETUP
 const profileSetup = async (req, res) => {
   try {
     const { id } = req.params;
-    const { username, bio } = req.body;    
+    const { username, bio } = req.body;
     if (req.file) {
       imgPath = `/uploads/${req.file.filename}`;
-      await User.findByIdAndUpdate(id,{username,bio,profilePicture:imgPath});
+      await User.findByIdAndUpdate(id, {
+        username,
+        bio,
+        profilePicture: imgPath,
+      });
       res.redirect("/");
     }
   } catch (error) {
-
-    return res.status(400).render("pages/error",{errorMessage:"Server Error"})
-
+    return res
+      .status(400)
+      .render("pages/error", { errorMessage: "Server Error" });
   }
 };
 
@@ -167,9 +167,9 @@ const login = async (req, res) => {
     res.cookie("token", token, option);
     res.redirect("/");
   } catch (error) {
-
-    return res.status(400).render("pages/error",{errorMessage:"Server Error"})
-
+    return res
+      .status(400)
+      .render("pages/error", { errorMessage: "Server Error" });
   }
 };
 
@@ -178,60 +178,68 @@ const logout = async (req, res) => {
     res.clearCookie("token");
     res.redirect("/login");
   } catch (error) {
-
-    return res.status(400).render("pages/error",{errorMessage:"Server Error"})
-
+    return res
+      .status(400)
+      .render("pages/error", { errorMessage: "Server Error" });
   }
 };
 
 const viewProfile = async (req, res) => {
   try {
-    const {id} = req.params;
-    const user = await User.findOne({ _id: id});
+    const { id } = req.params;
+    const user = await User.findOne({ _id: id });
     res.render("pages/updateProfile", { user });
   } catch (error) {
-
-    return res.status(400).render("pages/error",{errorMessage:"Server Error"})
-
+    return res
+      .status(400)
+      .render("pages/error", { errorMessage: "Server Error" });
   }
 };
-// UPDATEPROFILE 
+// UPDATEPROFILE
 const updateProfile = async (req, res) => {
   try {
-    const {username, bio} = req.body;
-    const {id} = req.user;
-    if(!req.file){
-       await User.updateOne({_id: id},{
-        username: username,
-        bio: bio,
-       })
-    }
-    else{
-         const user = await User.findById(id)
-         const filename = user.profilePicture.split("/uploads/")[1]
-         console.log(filename,"file");
-         
-         const oldImagePath = path.join(__dirname,".." , "public", "uploads", filename);
-         if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath); 
-    }
+    const { username, bio } = req.body;
+    const { id } = req.user;
+    if (!req.file) {
+      await User.updateOne(
+        { _id: id },
+        {
+          username: username,
+          bio: bio,
+        }
+      );
+    } else {
+      const user = await User.findById(id);
+      const filename = user.profilePicture.split("/uploads/")[1];
+      console.log(filename, "file");
+
+      const oldImagePath = path.join(
+        __dirname,
+        "..",
+        "public",
+        "uploads",
+        filename
+      );
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
       const imgPath = `/uploads/${req.file.filename}`;
-      await User.updateOne({_id: id},{
-        username: username,
-        bio: bio,
-        profilePicture:imgPath,
-      })
+      await User.updateOne(
+        { _id: id },
+        {
+          username: username,
+          bio: bio,
+          profilePicture: imgPath,
+        }
+      );
     }
-    res.redirect("/")
-
+    res.redirect("/");
   } catch (error) {
-
-    return res.status(400).render("pages/error",{errorMessage:"Server Error"})
-
+    return res
+      .status(400)
+      .render("pages/error", { errorMessage: "Server Error" });
   }
 };
-
-
 
 module.exports = {
   renderLogin,
@@ -243,5 +251,5 @@ module.exports = {
   logout,
   viewProfile,
   updateProfile,
-  verifyOtp
+  verifyOtp,
 };
